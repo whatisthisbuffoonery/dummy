@@ -2,6 +2,7 @@
 
 void	ft_putstr(char *a);
 void	ft_putnbr(int n);
+char	ft_child(node *a);
 
 void	muh_prefix(int *i, int k, node *a, node *nil)
 {
@@ -26,9 +27,13 @@ int		btree_level_count(tree *dis)
 
 void	btree_infix(node *root, node *nil, int k)
 {
+	char c;
 	int i = 1;
 	if (root != nil)
 	{
+		c = ft_child(root);
+		if (c != 'N')
+			write(1, &c, 1);
 		while (i < k)
 		{
 			write(1, "    ", 4);

@@ -2,6 +2,8 @@
 
 char	ft_child(node *a);
 void	rotate_mux(tree *dis, node *x, char a);
+void	ft_putstr(char *a);
+void	redden(node *a, tree *dis, int flag);
 
 void	top_shear(tree *dis, node *curr, node *a)
 {
@@ -14,7 +16,7 @@ void	top_shear(tree *dis, node *curr, node *a)
 	a->P = curr->P;
 }
 
-void	delete_fix_left(node *a, tree *dis)
+void	delete_fix_left(node *a, tree *dis, int b[])
 {
 	node *sibling;
 	while (a != *dis->root)
@@ -22,8 +24,11 @@ void	delete_fix_left(node *a, tree *dis)
 		sibling = a->P->R;
 		if (sibling->colour == red)
 		{
+			b[1] += 1;
+			b[0] += 1;
 			sibling->colour = black;
-			a->P->colour = red;
+			//a->P->colour = red;
+			redden(a->P, dis, 1);
 			a = a->P;
 			rotate_mux(dis, a, 'L');
 		}
@@ -31,18 +36,26 @@ void	delete_fix_left(node *a, tree *dis)
 		{
 			if (sibling->L->colour == black && sibling->R->colour == black)
 			{
+				b[1] += 1;
 				a = a->P;
-				sibling->colour = red;
+				//sibling->colour = red;
+				redden(sibling, dis, 1);
 				continue;
 			}
 			if (sibling->L->colour == red && sibling->R->colour == black)
 			{
+				b[1] += 1;
+				b[0] += 1;
 				sibling->L->colour = black;
-				sibling->colour = red;
+				redden(sibling, dis, 1);
+				//sibling->colour = red;
 				rotate_mux(dis, sibling, 'R');
 				sibling = a->P->R;
 			}
+			b[1] += 1;
+			b[0] += 1;
 			sibling->colour = a->P->colour;
+			redden(sibling, dis, 0);
 			a->P->colour = black;
 			sibling->R->colour = black;
 			rotate_mux(dis, a->P, 'L');
@@ -52,7 +65,7 @@ void	delete_fix_left(node *a, tree *dis)
 	}
 }
 
-void	delete_fix_right(node *a, tree *dis)
+void	delete_fix_right(node *a, tree *dis, int b[])
 {
 	node *sibling;
 	while (a != *dis->root)
@@ -60,8 +73,11 @@ void	delete_fix_right(node *a, tree *dis)
 		sibling = a->P->L;
 		if (sibling->colour == red)
 		{
+			b[1] += 1;
+			b[0] += 1;
 			sibling->colour = black;
-			a->P->colour = red;
+			redden(a->P, dis, 1);
+			//a->P->colour = red;
 			a = a->P;
 			rotate_mux(dis, a, 'R');
 		}
@@ -69,19 +85,27 @@ void	delete_fix_right(node *a, tree *dis)
 		{
 			if (sibling->L->colour == black && sibling->R->colour == black)
 			{
+				b[1] += 1;
 				a = a->P;
-				sibling->colour = red;
+				redden(sibling, dis, 1);
+				//sibling->colour = red;
 				continue;
 			}
 			if (sibling->L->colour == black && sibling->R->colour == red)
 			{
+				b[1] += 1;
+				b[0] += 1;
 				sibling->R->colour = black;
-				sibling->colour = red;
+				redden(sibling, dis, 1);
+				//sibling->colour = red;
 				rotate_mux(dis, sibling, 'L');
 				sibling = a->P->L;
 			}
+			b[1] += 1;
+			b[0] += 1;
 			sibling->colour = a->P->colour;
 			a->P->colour = black;
+			redden(sibling, dis, 0);
 			sibling->L->colour = black;
 			rotate_mux(dis, a->P, 'R');
 			return;
@@ -90,22 +114,37 @@ void	delete_fix_right(node *a, tree *dis)
 	}
 }
 
-void	delete_mux(node *a, lmao colour, tree *dis)
+void	prompt(node *a)
 {
+	ft_putstr((char *)a->data);
+	if (a->colour == red)
+		write(1, "R\n", 2);
+	else
+		write(1, "B\n", 2);
+}
+
+void	delete_mux(node *a, lmao colour, tree *dis, int b[])
+{
+	write(1, "replacement: ", 13);
+	prompt(a);
+	write(1, "\n", 1);
 	if (a == dis->nil)
 	{
 		if (a->P == dis->nil)
 			return;
 	}
 	if (colour == red)
+	{
+		b[1] += 1;
 		a->colour = black;
+	}
 	else if (ft_child(a) == 'R')
-		delete_fix_right(a, dis);
+		delete_fix_right(a, dis, b);
 	else
-		delete_fix_left(a, dis);
+		delete_fix_left(a, dis, b);
 }
 
-void	btree_delete(tree *dis, node *curr, void (*free_fct)(node *))
+void	btree_delete(tree *dis, node *curr, void (*free_fct)(node *), int b[])
 {
 	node *nil = dis->nil;
 	node *tmp = curr->P;
@@ -114,20 +153,24 @@ void	btree_delete(tree *dis, node *curr, void (*free_fct)(node *))
 	char c;
 	if (dis->nil->colour == red)
 		write(1, "poopoo\n", 7);
+	prompt(curr);
 	if (curr->R != nil && curr->L == nil)
 	{
+		write(1, "\nright\n", 7);
 		tmp = curr->R;
 		cache = tmp->colour;
 		top_shear(dis, curr, curr->R);
 	}
 	else if (curr->L != nil && curr->R == nil)
 	{
+		write(1, "\nleft\n", 6);
 		tmp = curr->L;
 		cache = tmp->colour;
 		top_shear(dis, curr, curr->L);
 	}
 	else if (curr->L != nil && curr->R != nil)
 	{
+		write(1, "\nboth\n", 6);
 		tmp = curr->R;
 		while (tmp->L != nil)
 			tmp = tmp->L;
@@ -146,6 +189,7 @@ void	btree_delete(tree *dis, node *curr, void (*free_fct)(node *))
 		tmp->L = curr->L;
 		curr->L->P = tmp;
 		tmp->colour = curr->colour;
+		b[1] += 1;
 		if (c == 'L')
 			tmp = tmp2->L;
 		else
@@ -154,6 +198,7 @@ void	btree_delete(tree *dis, node *curr, void (*free_fct)(node *))
 	}
 	else
 	{
+		write(1, "\nneither\n", 9);
 		tmp = curr->P;
 		c = ft_child(curr);
 		top_shear(dis, curr, nil);
@@ -164,7 +209,10 @@ void	btree_delete(tree *dis, node *curr, void (*free_fct)(node *))
 		cache = black;
 	}
 	if (curr->colour == black)
-		delete_mux(tmp, cache, dis);
+		delete_mux(tmp, cache, dis, b);
 	if (free_fct)
 		free_fct(curr);
+	nil->P = nil;
+	nil->L = nil;
+	nil->R = nil;
 } 
