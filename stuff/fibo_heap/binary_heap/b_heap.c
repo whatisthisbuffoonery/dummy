@@ -82,6 +82,53 @@ void	heap_prefix(int output[], int index, int level, int size)
 		heap_prefix(output, k + 2, level + 1, size);
 }
 
+void	fixdown(int output[], int size)
+{
+	int i = 0;
+	int k = 0;
+	while ((2 * i) + 2 < size)
+	{
+		k = 2 * i;
+		if (output[i] > output[k + 1])
+		{
+			if (output[k + 1] > output[k + 2])
+			{
+				ft_swap(&output[i], &output[k + 2]);
+				i = k + 2;
+				continue;
+			}
+			ft_swap(&output[i], &output[k + 1]);
+			i = k + 1;
+		}
+		else if (output[i] > output[k + 2])
+		{
+			ft_swap(&output[i], &output[k + 2]);
+			i = k + 2;
+		}
+		else
+			return;
+	}
+	k = 2 * i + 1;
+	if (size - (2 * i) > 0 && output[i] > output[k])
+		ft_swap(&output[i], &output[k]);
+}
+
+void	heap_pop(int output[], int *size)
+{
+	*size -= 1;
+	output[0] = output[*size];
+	output[*size] = 0;
+	fixdown(output, *size);
+}
+
+void	plain(int output[], int size)
+{
+	int i = 0;
+	while (i < size)
+		ft_putnbr(output[i++]);
+	write(1, "\n", 1);
+}
+
 int		main(int c, char **v)
 {
 	if (c < 2)
@@ -102,5 +149,12 @@ int		main(int c, char **v)
 	i = -1;
 	while (++i < size)
 		insert(output, input[i], i);
-	heap_prefix(output, 0, 1, c);
+	heap_prefix(output, 0, 1, size);
+	plain(output, size);
+	heap_pop(output, &size);
+	write(1, "\n---\n", 5);
+	heap_prefix(output, 0, 1, size);
+	plain(output, size);
+	free(input);
+	free(output);
 }
