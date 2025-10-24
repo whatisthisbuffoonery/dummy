@@ -1,0 +1,12 @@
+__STDC_ISO_10646__			If defined, wchar_t holds Unicode values, otherwise something else
+__STDC_MB_MIGHT_NEQ_WC__	A 1 indicates that the values in multibyte characters might not map equally to values in wide characters
+__STDC_UTF_16__				A 1 indicates that the system uses UTF-16 encoding in type char16_t
+__STDC_UTF_32__				A 1 indicates that the system uses UTF-32 encoding in type char32_t
+__STDC_ANALYZABLE__			A 1 indicates the code is analyzable132
+__STDC_IEC_559__			1 if IEEE-754 (aka IEC 60559) floating point is supported
+__STDC_IEC_559_COMPLEX__	1 if IEC 60559 complex floating point is supported
+__STDC_LIB_EXT1__			1 if this implementation supports a variety of “safe” alternate standard library functions (they have _s suffixes on the name)
+__STDC_NO_ATOMICS__			1 if this implementation does not support _Atomic or <stdatomic.h>
+__STDC_NO_COMPLEX__			1 if this implementation does not support complex types or <complex.h>
+__STDC_NO_THREADS__			1 if this implementation does not support <threads.h>
+__STDC_NO_VLA__				1 if this implementation does not support variable-length arrays

@@ -1,0 +1,5 @@
+'set' is a bash command
+
+getenv("") grabs values from val names in all caps
+putenv() setenv() unsetenv() linux
+_setenv() windows

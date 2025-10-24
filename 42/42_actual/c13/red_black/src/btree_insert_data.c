@@ -1,26 +1,21 @@
 #include "rb.h"
 
-node	*btree_create_node(void *data, node *nil);
-void	rotate_mux(tree *dis, node *x, char a);
-void	btree_infix(node *root, node *nil, int k);
-void	ft_putstr(char *a);
-char	ft_child_not(node *a);
-
-void	ft_recolour(tree *dis, node *curr, int flag)
+void	ft_recolour(tree *dis, node *curr, int flag, int verbose)
 {
 	node *unc = dis->nil;
 	
 	if (*dis->root == curr)
 		return;
-	curr->colour ^= 1;
-	curr->P->colour ^= 1;
+	curr->C ^= 1;
+	curr->P->C ^= 1;
 	if (curr == curr->P->L)
 		unc = curr->P->R;
 	else
 		unc = curr->P->L;
 	if (unc != dis->nil && flag)
-		unc->colour ^= 1;
-	write(1, "ree\n", 4);
+		unc->C ^= 1;
+	if (verbose)
+		write(1, "recolour\n", 9);
 }
 
 int		ft_unc(node *curr, node *nil)
@@ -32,20 +27,23 @@ int		ft_unc(node *curr, node *nil)
 		unc = curr->P->L;
 	if (unc == nil)
 		return (1);
-	return (unc->colour);
+	return (unc->C);
 }
 
 
-int		ft_check(node **root, node **a)
+int		ft_check(node **root, node **a, int verbose)
 {
 	node *tmp = *a;
 	while (tmp != *root)
 	{
-		if (tmp->colour == red && tmp->P->colour == red)
+		if (tmp->C == red && tmp->P->C == red)
 		{
 			*a = tmp;
-			write(1, "!", 1);
-			ft_putstr((char *)tmp->data);
+			if (verbose)
+			{
+				write(1, "!", 1);
+				ft_putstr((char *)tmp->data);
+			}
 			return (1);
 		}
 		tmp = tmp->P;
@@ -53,7 +51,7 @@ int		ft_check(node **root, node **a)
 	return (0);
 }
 
-void	btree_insert_data(tree *dis, void *data, int (*cmpf)(void *, void *), int back[])
+void	btree_insert_data(tree *dis, void *data, int (*cmpf)(void *, void *), int back[], int verbose)
 {
 	int compare = 0;
 	node *a = btree_create_node(data, dis->nil);
@@ -79,11 +77,14 @@ void	btree_insert_data(tree *dis, void *data, int (*cmpf)(void *, void *), int b
 	}
 	if (*dis->root == dis->nil)
 	{
-		a->colour = black;
+		a->C = black;
 		*dis->root = a;
-		write(1, "\n", 1);
-		btree_infix(*dis->root, dis->nil, 1);
-		write(1, "\n---\n", 5);
+		if (verbose)
+		{
+			write(1, "\n", 1);
+			btree_prefix(*dis->root, dis->nil, 1);
+			write(1, "\n---\n", 5);
+		}
 		return;
 	}
 	if (compare > 0)
@@ -91,35 +92,39 @@ void	btree_insert_data(tree *dis, void *data, int (*cmpf)(void *, void *), int b
 	if (compare < 0)
 		curr->L = a;
 	a->P = curr;
-	while (ft_check(dis->root, &a))
+	while (ft_check(dis->root, &a, verbose))
 	{
-		if ((*dis->root)->colour == red)
+		if ((*dis->root)->C == red)
 		{
-			write(1, "root red", 8);
-			(*dis->root)->colour = black;
+			if (verbose)
+				write(1, "root red", 8);
+			(*dis->root)->C = black;
 		}
 		else if (!ft_unc(a->P, dis->nil))
 		{
-			ft_recolour(dis, a->P, 1);
+			ft_recolour(dis, a->P, 1, verbose);
 			back[1] += 1;
 		}
 		else if (ft_child_not(a) != ft_child_not(a->P))
 		{
 			next = a->P;
-			rotate_mux(dis, a->P, ft_child_not(a));
+			rotate_mux(dis, a->P, ft_child_not(a), verbose);
 			a = next;
 			back[0] += 1;
 		}
 		else
 		{
-			ft_recolour(dis, a->P, 0);
+			ft_recolour(dis, a->P, 0, verbose);
 			back[1] += 1;
-			rotate_mux(dis, a->P->P, ft_child_not(a->P));
+			rotate_mux(dis, a->P->P, ft_child_not(a->P), verbose);
 			back[0] += 1;
 		}
-		dis->nil->colour = black;
+		dis->nil->C = black;
 	}
-	write(1, "\n", 1);
-	btree_infix(*dis->root, dis->nil, 1);
-	write(1, "\n---\n", 5);
+	if (verbose)
+	{
+		write(1, "\n", 1);
+		btree_prefix(*dis->root, dis->nil, 1);
+		write(1, "\n---\n", 5);
+	}
 }

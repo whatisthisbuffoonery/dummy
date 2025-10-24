@@ -6,10 +6,10 @@ node	*btree_create_node(void *data, node *nil)
 	a->L = nil;
 	a->R = nil;
 	a->P = nil;
-	a->colour = red;
+	a->C = red;
 	if (!nil)
 	{
-		a->colour = black;
+		a->C = black;
 		a->L = a;
 		a->R = a;
 		a->P = a;

@@ -50,17 +50,18 @@ void	right_rotate(node **root, node *nil, node *x)
 	}
 }
 
-void	ft_putstr(char *a);
-
-void	rotate_mux(tree *dis, node *x, char a)
+void	rotate_mux(tree *dis, node *x, char a, int verbose)
 {
 	if (a == 'L')
 		left_rotate(dis->root, dis->nil, x);
 	if (a == 'R')
 		right_rotate(dis->root, dis->nil, x);
-	write(1, "\n", 1);
-	write(1, &a, 1);
-	write(1, ", ", 2);
-	ft_putstr(x->data);
-	write(1, "\n", 1);
+	if (verbose)
+	{
+		write(1, "\n", 1);
+		write(1, &a, 1);
+		write(1, ", ", 2);
+		ft_putstr(x->data);
+		write(1, "\n", 1);
+	}
 }

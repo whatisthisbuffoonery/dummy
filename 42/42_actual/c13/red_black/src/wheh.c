@@ -1,13 +1,5 @@
 #include "rb.h"
 
-void	btree_insert_data(tree *dis, void *data, int (*cmpf)(void *, void*), int b[]);
-int		btree_level_count(tree *dis);
-void	btree_infix(node *root, node *nil, int k);
-node	*btree_create_node(void *data, node *nil);
-node	*btree_search(tree *dis, void *data, int (cmp)(void *, void *));
-void	btree_delete(tree *dis, node *curr, void (*free_fct)(node *), int b[]);
-int		ft_good_atoi(char *str);
-
 int		ft_strcmp(void *a, void *b)
 {
 	char *s1 = (char *)a;
@@ -76,12 +68,35 @@ int		int_cmp(void *a, void *b)
 	return (ft_atoi((char *)a) - ft_atoi((char *)b));
 }
 
+int		flag(int *num, char **v)
+{
+	int c = *num;
+	int i = 1;
+
+	while (i < c)
+	{
+		if (v[i][0] == '-' && v[i][1] == 'v' && v[i][2] == 0)
+		{
+			while (i < c)
+			{
+				v[i] = v[i + 1];
+				i ++;
+			}
+			*num -= 1;
+			return (1);
+		}
+		i ++;
+	}
+	return (0);
+}
+
 int		main(int c, char **v)
 {
-	if (c < 2)
-		return (1);
 	int i = 1;
 	int b[2] = {0, 0};
+	int verbose = flag(&c, v);
+	if (c < 2)
+		return (1);
 	node *dumdum = btree_create_node((void *)"pootis\0", 0);
 	tree *dis = malloc(sizeof(tree));
 	dis->root = &dumdum;
@@ -89,14 +104,15 @@ int		main(int c, char **v)
 	node *del;
 	while (i < c && v[i][0] != '|')
 	{
-		btree_insert_data(dis, (void *)v[i], int_cmp, b);
+		btree_insert_data(dis, (void *)v[i], int_cmp, b, verbose);
 		i ++;
 	}
 	i ++;
+	if (!verbose)
+		btree_prefix(*dis->root, dis->nil, 1);
 	write(1, "\n---\n", 5);
 	ft_putnbr(btree_level_count(dis));
 	write(1, "\n", 1);
-	//btree_suffix(dis, 1);
 	write(1, "turns: ", 7);
 	ft_putnbr(b[0]);
 	write(1, "\nrecolours: ", 12);
@@ -106,6 +122,7 @@ int		main(int c, char **v)
 	b[1] = 0;
 	while (i < c)
 	{
+		verbose = -1;
 		write(1, "\n-------\ndel", 12);
 		ft_putstr(v[i]);
 		write(1, "\n", 1);
@@ -113,24 +130,28 @@ int		main(int c, char **v)
 		if (!del)
 		{
 			write(1, "bomb out\n", 9);
-			return (1);
+			i ++;
+			continue;
 		}
 		btree_delete(dis, del, free_func_no_data, b);
-		btree_infix(*dis->root, dis->nil, 1);
+		btree_prefix(*dis->root, dis->nil, 1);
 		i ++;
 	}
-	write(1, "\n-------\n", 9);
-	ft_putnbr(btree_level_count(dis));
-	write(1, "\n", 1);
-	//btree_suffix(dis, 1);
-	write(1, "turns: ", 7);
-	ft_putnbr(b[0]);
-	write(1, "\nrecolours: ", 12);
-	ft_putnbr(b[1]);
-	write(1, "\n", 1);
+	if (verbose == -1)
+	{
+		write(1, "\n-------\n", 9);
+		ft_putnbr(btree_level_count(dis));
+		write(1, "\n", 1);
+		write(1, "turns: ", 7);
+		ft_putnbr(b[0]);
+		write(1, "\nrecolours: ", 12);
+		ft_putnbr(b[1]);
+		write(1, "\n", 1);
+	}
 
-	while (*dis->root != dis->nil)
-		btree_delete(dis, *dis->root, free_func_no_data, b);
-	free(dis->nil);
-	free(dis);
+//	while (*dis->root != dis->nil)
+//		btree_delete(dis, *dis->root, free_func_no_data, b);
+//	free(dis->nil);
+//	free(dis);
+	btree_clear(dis);
 }

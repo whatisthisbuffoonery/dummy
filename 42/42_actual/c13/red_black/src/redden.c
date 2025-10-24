@@ -3,7 +3,7 @@
 void	redden(node *a, tree *dis, int flag)
 {
 	if (flag)
-		a->colour = red;
+		a->C = red;
 	if (a == *dis->root || a == dis->nil)
-		a->colour = black;
+		a->C = black;
 }

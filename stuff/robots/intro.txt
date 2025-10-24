@@ -1,0 +1,6 @@
+make as many geodes as possible
+you start with one ore robot
+robots always cost the same kind of material, user decides how much
+you build one robot per turn, and robots get one resource each per turn
+
+tldr leddoo guy did naive brute force recursion solution, and slowly optimised 5 hrs into ~30s, go figure out how hash maps work

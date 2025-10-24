@@ -1,9 +1,5 @@
 #include "rb.h"
 
-void	ft_putstr(char *a);
-void	ft_putnbr(int n);
-char	ft_child(node *a);
-
 void	muh_prefix(int *i, int k, node *a, node *nil)
 {
 	if (a != nil)
@@ -25,7 +21,7 @@ int		btree_level_count(tree *dis)
 	return (i);
 }
 
-void	btree_infix(node *root, node *nil, int k)
+void	btree_prefix(node *root, node *nil, int k)
 {
 	char c;
 	int i = 1;
@@ -40,7 +36,7 @@ void	btree_infix(node *root, node *nil, int k)
 			i ++;
 		}
 		ft_putstr((char *)root->data);
-		if (root->colour == red)
+		if (root->C == red)
 			write(1, "R", 1);
 		else
 			write(1, "B", 1);
@@ -57,7 +53,7 @@ void	btree_infix(node *root, node *nil, int k)
 		write(1, "\n", 1);
 	}
 	if (root->L != nil)
-		btree_infix(root->L, nil, k + 1);
+		btree_prefix(root->L, nil, k + 1);
 	if (root->R != nil)
-		btree_infix(root->R, nil, k + 1);
+		btree_prefix(root->R, nil, k + 1);
 }
