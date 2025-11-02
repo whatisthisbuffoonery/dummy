@@ -148,11 +148,27 @@ void	throw(t_wait wait, char b, char *str)
 	else
 		write(1, "operator, ", 10);
 	write(1, "got: ", 5);
-	if (wait == w_num)
+	if (!str)
 		write(1, &b, 1);
 	else
 		ft_putstr(str);
 	write(1, "\n", 1);
+}
+
+void	clear_q(t_queue *q)
+{
+	t_op *f = q->front;
+	t_op *tmp;
+	while (f->type != nil)
+	{
+		tmp = f->next;
+		if (f->type <= num)
+			free(f->num);
+		free(f);
+		f = tmp;
+	}
+	free(q->nil);
+	free(q);
 }
 
 t_queue	*ft_me_dup(char *src)
@@ -182,8 +198,12 @@ t_queue	*ft_me_dup(char *src)
 		}
 		else
 		{
+			while (--a > 0)
+				write(1, " ", 1);
+			write(1, "^\n", 2);
 			probe(a, "at index ");
 			throw(wait, b, result->back->num);
+			clear_q(result);
 			return (0);
 		}
 	}
@@ -359,22 +379,6 @@ void	ft_print(t_queue *q)
 	write(1, "\n", 1);
 }
 
-void	clear_q(t_queue *q)
-{
-	t_op *f = q->front;
-	t_op *tmp;
-	while (f->type != nil)
-	{
-		tmp = f->next;
-		if (f->type <= num)
-			free(f->num);
-		free(f);
-		f = tmp;
-	}
-	free(q->nil);
-	free(q);
-}
-
 char	*spaces(char *v, char *t)
 {
 	int i = 0;
@@ -433,21 +437,21 @@ int		main(int c, char **v)
 		return (1);
 	char *table = tabler();
 	char *input = spaces(v[1], table);
+	t_queue *in = 0;
 	ft_putstr(input);
 	write(1, "\n", 1);
 	if (brackets(input))
-	{
 		write(1, "improper brackets\n", 18);
-		return (1);
+	else
+		in = ft_me_dup(input);
+	if (in)
+	{
+		ft_print(in);
+		t_queue *out = ft_postfix(in);
+		ft_print(out);
+		clear_q(in);
+		clear_q(out);
 	}
-	t_queue *in = ft_me_dup(input);
-	if (!in)
-		return (1);
-	ft_print(in);
-	t_queue *out = ft_postfix(in);
-	ft_print(out);
 	free(input);
 	free(table);
-	clear_q(in);
-	clear_q(out);
 }

@@ -1,0 +1,9 @@
+take input
+turn that into a token queue
+output is another queue
+yeet all operands straight into output
+operators into a separate stack
+if new operator has less or equal prio than the one it would sit on, replace old top and replace with new
+retroactively check for violation
+exponents get to sit with each other in stack
+brackets are not really operators, special rules
