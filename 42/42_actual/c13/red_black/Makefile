@@ -22,3 +22,14 @@ $(OBJDIR):
 
 $(PCH): $(PCHDIR)/rb.h
 	$(CC) $(PCH_FLAGS) -o $(PCH) -c $(PCHDIR)/rb.h
+
+clean:
+	rm -f $(OBJECTS)
+	rm -f $(PCH)
+
+fclean: clean
+	rm -f $(TARGET)
+
+re: fclean all
+
+.PHONY: all clean fclean re

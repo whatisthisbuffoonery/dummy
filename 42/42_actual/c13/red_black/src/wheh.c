@@ -95,6 +95,7 @@ int		main(int c, char **v)
 	int i = 1;
 	int b[2] = {0, 0};
 	int verbose = flag(&c, v);
+	int verb2 = 0;
 	if (c < 2)
 		return (1);
 	node *dumdum = btree_create_node((void *)"pootis\0", 0);
@@ -122,23 +123,30 @@ int		main(int c, char **v)
 	b[1] = 0;
 	while (i < c)
 	{
-		verbose = -1;
-		write(1, "\n-------\ndel", 12);
-		ft_putstr(v[i]);
-		write(1, "\n", 1);
+		verb2 = 1;
+		if (verbose)
+		{
+			write(1, "\n-------\ndel", 12);
+			ft_putstr(v[i]);
+			write(1, "\n", 1);
+		}
 		del = btree_search(dis, (void *)v[i], int_cmp);
 		if (!del)
 		{
-			write(1, "bomb out\n", 9);
+			if (verbose)
+				write(1, "bomb out\n", 9);
 			i ++;
 			continue;
 		}
-		btree_delete(dis, del, free_func_no_data, b);
-		btree_prefix(*dis->root, dis->nil, 1);
+		btree_delete(dis, del, free_func_no_data, b, verbose);
+		if (verbose)
+			btree_prefix(*dis->root, dis->nil, 1);
 		i ++;
 	}
-	if (verbose == -1)
+	if (verb2)
 	{
+		if (!verbose)
+			btree_prefix(*dis->root, dis->nil, 1);
 		write(1, "\n-------\n", 9);
 		ft_putnbr(btree_level_count(dis));
 		write(1, "\n", 1);

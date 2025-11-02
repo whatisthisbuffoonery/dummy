@@ -45,7 +45,7 @@ type2	bitmap(char *v, int *complain)
 	return (result);
 }	
 
-void	(type *res, type *robots)
+void	tick(type *res, type *robots)
 {
 	res->ore += robots->ore;
 	res->clay += robots->clay;
@@ -61,7 +61,7 @@ void	ft_putstr(char *a)
 	write(1, a, i);
 }
 
-int		main(int c, char **v)
+int		main(int c, char **v)//common modes: 32 turns, 24 turns
 {
 	if (c != 2)
 	{
@@ -79,12 +79,5 @@ int		main(int c, char **v)
 	}
 	type res = {0, 0, 0, 0};
 	type robots = {1, 0, 0, 0};
-	int i = 0;
-	while (i < 1000)
-	{
-		tick(&res, &robots);
-		if (i < 700 && res.ore > blueprints.ore)
-			construct(&res, &robots, "ore", res.ore);
-		i ++;
-	}
+	solve(
 }
