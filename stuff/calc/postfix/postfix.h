@@ -15,6 +15,12 @@ typedef enum
 	nil = 1
 }				t_type;
 
+typedef enum
+{
+	w_num = 1,
+	op = 0
+}				t_wait;
+
 typedef struct	s_op
 {
 	t_type		type;

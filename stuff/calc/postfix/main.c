@@ -81,14 +81,15 @@ t_op	*make(t_op *n)
 	return (a);
 }
 
-void	enq(t_queue *q, char *src, int *index)
+t_wait	enq(t_queue *q, char *src, int *index)
 {
 	int i = *index;
+	char c = src[i];
 	t_op *back = q->back;
 	back->next = make(q->nil);
 	back = back->next;
 	q->size += 1;
-	switch (src[i])
+	switch (c)
 	{
 		case '-':
 			if (src[i + 1] != ' ')
@@ -115,15 +116,17 @@ void	enq(t_queue *q, char *src, int *index)
 			back->type = num;
 	}
 	if (q->front->type == nil)
-	{
-		write(1, "hh\n", 3);
 		q->front = back;
-	}
-	if (back->type == num)
-		ft_atoa(back, src, index);
-	else
-		back->data = src[i];
 	q->back = back;
+	if (back->type == num)
+	{
+		ft_atoa(back, src, index);
+		return (w_num);
+	}
+	back->data = c;
+	if (c == '(')
+		return (w_num);
+	return (op);
 //	probe(back->type, "back: ");
 }
 
@@ -137,18 +140,52 @@ t_queue *create_q(void)
 	return (q);
 }
 
+void	throw(t_wait wait, char b, char *str)
+{
+	write(1, "expecting ", 10);
+	if (wait == w_num)
+		write(1, "operand, ", 9);
+	else
+		write(1, "operator, ", 10);
+	write(1, "got: ", 5);
+	if (wait == w_num)
+		write(1, &b, 1);
+	else
+		ft_putstr(str);
+	write(1, "\n", 1);
+}
+
 t_queue	*ft_me_dup(char *src)
 {
-	int a = 0;
+	int a = -1;
 	int size = 0;
+	char b;
+	t_wait wait = w_num;
+	t_wait got;
 	while (src[size])
 		size ++;
 	t_queue *result = create_q();
-	while (a < size)
+	while (++a < size)
 	{
 		if (src[a] != ' ')
-			enq(result, src, &a);
-		a ++;
+		{
+		//	probe(a, "a: ");
+			got = enq(result, src, &a);
+		}
+		else
+			continue;
+		b = result->back->data;
+		if (wait == got)
+		{
+			if (b != '(' && b != ')')
+				wait ^= 1;
+		}
+		else
+		{
+			probe(a, "at index ");
+			throw(wait, b, result->back->num);
+			return (0);
+		}
 	}
 	return (result);
 }
@@ -226,9 +263,11 @@ int		check(t_stack *stack)
 	t_op *s = stack->arr;
 	t_op a = s[top];
 	t_op b = s[top - 1];
+	/*
 	write(1, &b.data, 1);
 	write(1, &a.data, 1);
 	write(1, "\n", 1);
+	*/
 	if (a.type == e && b.type == e)
 		return (0);
 	if (b.type >= a.type && b.type != p)
@@ -264,6 +303,7 @@ char	*tabler(void)//remember '!' factorial
 	c['%'] = 1;
 	c['^'] = 1;
 	c['('] = 1;
+	c[')'] = 1;
 	return (c);
 }
 
@@ -276,7 +316,7 @@ t_queue	*ft_postfix(t_queue *in)
 	char *op = tabler();
 	while (f->type != nil)
 	{
-		if (f->type == num || f->type == alg)
+		if (f->type <= num)
 			q_copy(out, f, in);
 		else if (f->data == ')')
 		{
@@ -300,6 +340,7 @@ t_queue	*ft_postfix(t_queue *in)
 	empty(stack, out);
 	free(stack->arr);
 	free(stack);
+	free(op);
 	return (out);
 }
 
@@ -315,19 +356,98 @@ void	ft_print(t_queue *q)
 			write(1, &a->data, 1);
 		a = a->next;
 	}
-//	a = q->front->next;
-//	probe(a->type, "enum: ");
 	write(1, "\n", 1);
+}
+
+void	clear_q(t_queue *q)
+{
+	t_op *f = q->front;
+	t_op *tmp;
+	while (f->type != nil)
+	{
+		tmp = f->next;
+		if (f->type <= num)
+			free(f->num);
+		free(f);
+		f = tmp;
+	}
+	free(q->nil);
+	free(q);
+}
+
+char	*spaces(char *v, char *t)
+{
+	int i = 0;
+	int k = 0;
+	while (v[i])
+		i ++;
+	char *result = malloc(((3 * i) + 1) * sizeof(char));
+	i = 0;
+	while (v[i])
+	{
+		if (t[(unsigned char) v[i]])
+		{
+			if (i > 0 && v[i - 1] != ' ')
+				result[k++] = ' ';
+			result[k++] = v[i];
+			if ((v[i] != '-' && v[i + 1] != ' ') || t[(unsigned char) v[i + 1]])
+				result[k++] = ' ';
+			i ++;
+		}
+		else
+			result[k++] = v[i++];
+	}
+	result[k] = 0;
+	return (result);
+}
+
+int		brackets(char *in)
+{
+	int br = 0;
+	int flag = 0;
+	int i = 0;
+
+	while (in[i])
+	{
+		if (in[i] == '(')
+		{
+			br ++;
+			flag = 1;
+		}
+		else if (in[i] == ')')
+		{
+			if (flag)
+				return (1);
+			br --;
+		}
+		else if (in[i] != ' ')
+			flag = 0;
+		i ++;
+	}
+	return (br);
 }
 
 int		main(int c, char **v)
 {
 	if (c != 2)
 		return (1);
-	t_queue *in = ft_me_dup(v[1]);
+	char *table = tabler();
+	char *input = spaces(v[1], table);
+	ft_putstr(input);
+	write(1, "\n", 1);
+	if (brackets(input))
+	{
+		write(1, "improper brackets\n", 18);
+		return (1);
+	}
+	t_queue *in = ft_me_dup(input);
+	if (!in)
+		return (1);
 	ft_print(in);
 	t_queue *out = ft_postfix(in);
 	ft_print(out);
-	free(in);
-	free(out);
+	free(input);
+	free(table);
+	clear_q(in);
+	clear_q(out);
 }
