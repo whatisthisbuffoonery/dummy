@@ -211,8 +211,6 @@ t_queue	*ft_me_dup(char *src)
 		}
 		else if ((wait == w_num && b == '-') && type != una)
 			ft_una(result);
-		else if ((wait == op && b == '(') && type == alg)
-			ft_func(result);//save
 		else
 		{
 			size = a;

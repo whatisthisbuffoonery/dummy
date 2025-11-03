@@ -575,7 +575,7 @@ int		ft_alg(t_queue *in)
 	{
 		if (f->type == alg || f->type == fun)
 		{
-			write(1, "algebra, do not calc\n", 21);
+			ft_putstr("algebra/functions present, do not calc\n");
 			return (1);
 		}
 		else if (f->type == num)
