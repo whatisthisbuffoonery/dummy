@@ -182,6 +182,16 @@ void	ft_una(t_queue *q)
 	c[3] = 0;
 }
 
+void	ft_func(t_queue *q)
+{
+	t_op *f = q->front;
+	t_op *b = q->back;
+
+	while (f->next != b)
+		f = f->next;
+	f->type = fun;
+}
+
 t_queue	*ft_me_dup(char *src)
 {
 	int a = -1;
@@ -211,6 +221,11 @@ t_queue	*ft_me_dup(char *src)
 		}
 		else if ((wait == w_num && b == '-') && type != una)
 			ft_una(result);
+		else if ((wait == op && b == '(') && type == alg)
+		{
+			wait ^= 1;
+			ft_func(result);//save
+		}
 		else
 		{
 			size = a;
@@ -317,9 +332,9 @@ int		check(t_stack *stack)
 	t_op b = s[top - 1];
 	int a_t = a.type - (a.type == una);
 	int b_t = b.type - (b.type == una);
-	if (a_t == b_t && ((a.type == e || a.type == fac) || a.type == una))
+	if (a_t == b_t && a.type >= e)
 		flag = 0;
-	else if (b.type >= a.type && b.type != p)
+	else if (b_t >= a_t && b.type != p)
 		flag = 1;
 	/*	
 	write(1, &b.data, 1);
@@ -392,7 +407,7 @@ t_queue	*postfix_convert(t_queue *in)
 			b_pop(stack, out);
 			deq(in);
 		}
-		else if (op[(unsigned char) f->data])
+		else if (f->type == fun || op[(unsigned char) f->data])
 		{
 			push(stack, in);
 			while (check(stack))
@@ -444,6 +459,11 @@ char	*spaces(char *v, char *t)
 			if (v[i + 1] != ' ' && !t[(unsigned char) v[i + 1]])
 				result[k++] = ' ';
 			i ++;
+		}
+		else if (v[i] == '\\')
+		{
+			i ++;
+			result[k++] = ' ';
 		}
 		else
 			result[k++] = v[i++];
@@ -553,7 +573,7 @@ int		ft_alg(t_queue *in)
 	t_op *f = in->front;
 	while (f->type != nil)
 	{
-		if (f->type == alg)
+		if (f->type == alg || f->type == fun)
 		{
 			write(1, "algebra, do not calc\n", 21);
 			return (1);

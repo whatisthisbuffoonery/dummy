@@ -6,9 +6,10 @@
 
 typedef enum
 {
-	p = 9,
+	p = 10,
+	fun = 9,
 	fac = 8,
-	una = 7,
+	una = 7,//gets shoved down to 6 during eval
 	e = 6,
 	md = 5,
 	as = 4,
