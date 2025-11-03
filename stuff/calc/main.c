@@ -230,7 +230,7 @@ t_queue	*ft_me_dup(char *src)
 	if (wait == w_num)//this bug is still unpatched in the backup
 	{
 		if (result->size)
-			ft_putstr("extra operator at end\n");
+			ft_putstr("missing operand at end of string\n");
 		else
 			ft_putstr("empty string\n");
 		clear_q(result, 1);
@@ -275,7 +275,7 @@ void	push(t_stack *stack, t_queue *in)
 	a->num = f->num;
 	a->type = f->type;
 	a->result = f->result;
-	deq(in);//leaving this here was not goo design
+	deq(in);//leaving this here was not good design
 //	probe(a->result, "push: ");
 }
 
@@ -606,6 +606,8 @@ void	do_op(t_stack *s, t_op *ape, int *complain)
 	char op = ape->data;
 //	probe(a->result, "a: ");
 //	probe(b->result, "b: ");
+//	ft_putstr(&op);
+//	write(1, "\n", 1);
 	switch (op)
 	{
 		case '+':
@@ -626,7 +628,7 @@ void	do_op(t_stack *s, t_op *ape, int *complain)
 		case '^':
 			if (b->result < 1)
 			{
-				write(1, "sorry, no floats or fractional monads here\n", 43);
+				write(1, "sorry, no floats or fractional monads here (negative power error)\n", 66);
 				*complain = 1;
 				return;
 			}
@@ -719,13 +721,15 @@ void	dialogue(char *v)
 		i ++;
 	}
 	ft_putstr("allowed operands: alphanumeric and _underscores\n\n");
+	ft_putstr("exact change for division: no refunds (no floats in here)\n\n");
+	ft_putstr("no negative powers either\n\n");
 	ft_putstr("helpful debug logs:\n");
-	ft_putstr("134: probe enqueue\n" \
-			"255: probe stack push\n" \
-			"298: stack decision\n" \
-			"311: empty contents\n" \
-			"478: ft_postfix input/output verification\n" \
-			"580: check calculation (incomplete)\n");
+	ft_putstr("129: probe enqueue\n" \
+			"279: probe stack push\n" \
+			"325: stack decision\n" \
+			"339: empty contents\n" \
+			"504: ft_postfix input/output verification\n" \
+			"607: check calculation\n");
 	free(table);
 }
 
