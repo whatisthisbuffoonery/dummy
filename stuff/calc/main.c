@@ -161,7 +161,7 @@ void	clear_q(t_queue *q, int flag)
 	while (f->type != nil)
 	{
 		tmp = f->next;
-		if (flag && (f->type <= num || f->type == una))
+		if (flag && (f->type <= num || f->type == una || f->type == fun))
 			free(f->num);
 		free(f);
 		f = tmp;
@@ -682,7 +682,7 @@ void	num_free(t_queue *q)
 	t_op *f = q->front;
 	while (f->type != nil)
 	{
-		if (f->type <= num || f->type == una)
+		if (f->type <= num || f->type == una || f->type == fun)
 			free(f->num);
 		f = f->next;
 	}
