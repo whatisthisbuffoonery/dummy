@@ -161,7 +161,7 @@ void	clear_q(t_queue *q, int flag)
 	while (f->type != nil)
 	{
 		tmp = f->next;
-		if (flag && (f->type <= num || f->type == una))
+		if (f->type <= num || (flag && f->type == una))
 			free(f->num);
 		free(f);
 		f = tmp;
@@ -227,22 +227,16 @@ t_queue	*ft_me_dup(char *src)
 			return (0);
 		}
 	}
-	if (wait == w_num)//this bug is still unpatched in the backup
-	{
-		if (result->size)
-			ft_putstr("extra operator at end\n");
-		else
-			ft_putstr("empty string\n");
-		clear_q(result, 1);
-		return (0);
-	}
-	
 	return (result);
 }
 
-void	deq(t_queue *q)
+void	deq(t_queue *q, int flag)
 {
 	t_op *f = q->front;
+	if (flag && (f->type == num || f->type == alg))
+		free(f->num);
+	else if (flag == 2 && f->type == una)
+		free(f->num);
 	f = f->next;
 	free(q->front);
 	q->front = f;
@@ -263,7 +257,7 @@ void	q_copy(t_queue *out, t_op *src, t_queue *in)
 	back->num = src->num;
 	out->back = back;
 	if (in)
-		deq(in);
+		deq(in, 0);
 }
 
 void	push(t_stack *stack, t_queue *in)
@@ -275,7 +269,7 @@ void	push(t_stack *stack, t_queue *in)
 	a->num = f->num;
 	a->type = f->type;
 	a->result = f->result;
-	deq(in);//leaving this here was not goo design
+	deq(in, 1);
 //	probe(a->result, "push: ");
 }
 
@@ -390,7 +384,7 @@ t_queue	*postfix_convert(t_queue *in)
 		else if (f->data == ')')
 		{
 			b_pop(stack, out);
-			deq(in);
+			deq(in, 1);
 		}
 		else if (op[(unsigned char) f->data])
 		{
@@ -624,7 +618,7 @@ void	do_op(t_stack *s, t_op *ape, int *complain)
 			a->result *= b->result;
 			break;
 		case '^':
-			if (b->result < 1)
+			if (b->result < 0)
 			{
 				write(1, "sorry, no floats or fractional monads here\n", 43);
 				*complain = 1;
@@ -655,17 +649,6 @@ void	do_op(t_stack *s, t_op *ape, int *complain)
 	s->top -= flag;
 }
 
-void	num_free(t_queue *q)
-{
-	t_op *f = q->front;
-	while (f->type != nil)
-	{
-		if (f->type <= num || f->type == una)
-			free(f->num);
-		f = f->next;
-	}
-}
-
 long	ft_calc(char *v, int *complain)
 {
 	int a = 0;
@@ -677,17 +660,16 @@ long	ft_calc(char *v, int *complain)
 		*complain = 1;
 		return (0);
 	}
-	num_free(in);
 	t_stack *s = create_s(in->size);
 	t_op *f = in->front;
 	while (f->type != nil)
 	{
 		if (f->type == num)
-			push(s, in);//leaving a deq() in push was REALLY bad design
+			push(s, in);
 		else
 		{
 			do_op(s, f, complain);
-			deq(in);
+			deq(in, 2);
 		}
 		if (*complain)
 		{
@@ -697,7 +679,7 @@ long	ft_calc(char *v, int *complain)
 	}
 	a = s->arr[s->top].result;
 	clear_s(s);
-	clear_q(in, 0);
+	clear_q(in, 1);
 	return (a);
 }
 

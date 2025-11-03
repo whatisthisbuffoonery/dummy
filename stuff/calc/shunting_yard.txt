@@ -7,3 +7,7 @@ if new operator has less or equal prio than the one it would sit on, replace old
 retroactively check for violation
 exponents get to sit with each other in stack
 brackets are not really operators, special rules
+
+
+
+also also the one in save is outdated use the copy sitting outside
