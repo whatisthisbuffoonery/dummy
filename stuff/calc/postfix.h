@@ -6,7 +6,9 @@
 
 typedef enum
 {
-	p = 7,
+	p = 9,
+	fac = 8,
+	una = 7,
 	e = 6,
 	md = 5,
 	as = 4,
@@ -25,6 +27,7 @@ typedef struct	s_op
 {
 	t_type		type;
 	struct s_op	*next;
+	long		result;
 	char		*num;
 	char		data;
 }				t_op;
