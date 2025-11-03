@@ -745,11 +745,11 @@ void	dialogue(char *v)
 	ft_putstr("no negative powers either\n\n");
 	ft_putstr("helpful debug logs:\n");
 	ft_putstr("129: probe enqueue\n" \
-			"279: probe stack push\n" \
-			"325: stack decision\n" \
-			"339: empty contents\n" \
-			"504: ft_postfix input/output verification\n" \
-			"607: check calculation\n");
+			"294: probe stack push\n" \
+			"340: stack decision\n" \
+			"354: empty contents\n" \
+			"524: ft_postfix input/output verification\n" \
+			"627: check calculation\n");
 	free(table);
 }
 
