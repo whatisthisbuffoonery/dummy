@@ -200,7 +200,6 @@ void	ft_func(t_queue *q)
 {
 	t_op *f = q->front;
 	t_op *b = q->back;
-
 	while (f->next != b)
 		f = f->next;
 	f->type = fun;
@@ -238,7 +237,7 @@ t_queue	*ft_me_dup(char *src)
 		else if ((wait == op && b == '(') && type == alg)
 		{
 			wait ^= 1;
-			ft_func(result);//save
+			ft_func(result);
 		}
 		else
 		{
@@ -256,7 +255,7 @@ t_queue	*ft_me_dup(char *src)
 			return (0);
 		}
 	}
-	if (wait == w_num)//this bug is still unpatched in the backup
+	if (wait == w_num)
 	{
 		if (result->size)
 			ft_putstr("missing operand at end of string\n");
@@ -268,17 +267,7 @@ t_queue	*ft_me_dup(char *src)
 	
 	return (result);
 }
-/*
-void	deq(t_queue *q)
-{
-	t_op *f = q->front;
-	f = f->next;
-	free(q->front);
-	q->front = f;
-	if (f == q->nil)
-		q->back = f;
-}
-*/
+
 void	q_copy(t_queue *out, t_op *src)
 {
 	t_op *back = out->back;
@@ -413,9 +402,7 @@ t_queue	*postfix_convert(t_queue *in)
 		if (f->type <= num)
 			q_copy(out, f);
 		else if (f->data == ')')
-		{
 			b_pop(stack, out);
-		}
 		else if (f->type == fun || op[(unsigned char) f->data])
 		{
 			push(stack, f);
@@ -685,18 +672,7 @@ void	do_op(t_stack *s, t_op *ape, int *complain)
 	}
 	s->top -= flag;
 }
-/*
-void	num_free(t_queue *q)
-{
-	t_op *f = q->front;
-	while (f->type != nil)
-	{
-		if (f->type <= num || f->type == una || f->type == fun)
-			free(f->num);
-		f = f->next;
-	}
-}
-*/
+
 long	ft_calc(char *v, int *complain)
 {
 	int a = 0;
@@ -708,7 +684,6 @@ long	ft_calc(char *v, int *complain)
 		*complain = 1;
 		return (0);
 	}
-//	num_free(in);
 	t_stack *s = create_s(in->size);
 	t_op *f = in->front;
 	while (f->type != nil)
@@ -716,13 +691,9 @@ long	ft_calc(char *v, int *complain)
 		if (f->type == num)
 			push(s, f);//leaving a deq() in push was REALLY bad design
 		else
-		{
 			do_op(s, f, complain);
-		}
 		if (*complain)
-		{
 			break;
-		}
 		f = f->next;
 	}
 	a = s->arr[s->top].result;
@@ -754,11 +725,12 @@ void	dialogue(char *v)
 	ft_putstr("no negative powers either\n\n");
 	ft_putstr("helpful debug logs:\n");
 	ft_putstr("129: probe enqueue\n" \
-			"304: probe stack push\n" \
-			"350: stack decision\n" \
-			"364: empty contents\n" \
-			"533: ft_postfix input/output verification\n" \
-			"636: check calculation\n");
+			"224: other half of probe enqueue\n" \
+			"293: probe stack push\n" \
+			"338: stack decision\n" \
+			"352: empty contents\n" \
+			"520: ft_postfix input/output verification\n" \
+			"623: check calculation\n");
 	free(table);
 }
 
