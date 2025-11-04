@@ -141,9 +141,15 @@ void	ft_func_fudge(t_queue *q, t_op *op)
 	}
 	if (k > 1)
 		op->num[1] = 0;
+	/*
+	if (op->num[0] > '9')
+		op->type = alg;
+	else
+		op->type = num;
+	*/
 	if (tmp->type == nil)
 		q->back = f;
-	else if (i == 1)
+	else if (i == 1)//if num/if alg
 	{
 		q->size += 1;
 		if (f->type == num || f->type == p)
@@ -151,6 +157,16 @@ void	ft_func_fudge(t_queue *q, t_op *op)
 			f->next = fudge_mul(q->nil);
 			f = f->next;
 		}
+		/*
+		else if (f->type == alg)
+		{
+			while (spare->next != f)
+				spare = spare->next;
+			spare->next = fudge_mul(q->nil);
+			spare = spare->next;
+			spare->next = f;
+		}
+		*/
 	}
 	if (tmp->type != nil)
 		f->next = tmp;
@@ -331,13 +347,16 @@ t_queue	*ft_me_dup(char *src)
 		else if (wait == op && back->data == ')' && (result->back->type == alg || result->back->data == '('))
 		{
 			if (result->back->data == '(')
-				wait = w_num;
+				wait ^= 1;
 			ft_func_fudge(result, back);
 		}
 		else
 		{
-			ft_putstr(src);
-			write(1, "\n", 1);
+			/*
+			ft_putstr("debug: ");
+			ft_putstr(&back->data);
+			ft_putstr("\n");
+			*/
 			size = a;
 			a = (wait == op);
 			while (a < size)
@@ -820,20 +839,18 @@ void	dialogue(char *v)
 	ft_putstr("exact change for division: no refunds (no floats in here)\n\n");
 	ft_putstr("no negative powers either\n\n");
 	ft_putstr("helpful debug logs:\n");
-	ft_putstr("113: fudge input\n" \
-			"206: probe enqueue\n" \
-			"310: other half of probe enqueue\n" \
+	ft_putstr("129: probe enqueue\n" \
+			"224: other half of probe enqueue\n" \
 			"293: probe stack push\n" \
-			"438: stack decision\n" \
-			"452: empty contents\n" \
-			"619: ft_postfix input/output verification\n" \
-			"722: check calculation\n" \
+			"338: stack decision\n" \
+			"352: empty contents\n" \
+			"520: ft_postfix input/output verification\n" \
+			"623: check calculation\n" \
 			"\nTHIS JUST IN--------\n\n" \
 			"mathmaticians don't use multi char variables or underscores\n" \
 			"so I can finally go debug \"sin - (1)\" and guarantee ab = a * b\n"
 			"whenever I decide to give a fuck again\n"
-			"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n" \
-			"update: done all that\n");
+			"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
 	free(table);
 }
 

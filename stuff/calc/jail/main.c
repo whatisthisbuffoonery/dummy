@@ -50,8 +50,9 @@ void	ft_atoa(t_op *op, char *src, int *index, int *complain)
 	int i = *index;
 	int k = 0;
 	int j = 0;
-	int flag = 0;
-	int fnum = 0;
+	int algf = 0;
+	int numf = 0;
+	char c;
 	if (src[i] == '-')
 		j ++;
 	while (src[i] && src[i] != ' ')
@@ -63,21 +64,22 @@ void	ft_atoa(t_op *op, char *src, int *index, int *complain)
 	while (src[i + k] && src[i + k] != ' ')
 	{
 		op->num[k] = src[i + k];
-		if (op->num[k] > '9')
-			flag = 1;
-		else
-			fnum = 1;
+		c = op->num[k];
+		if (c > '9')
+			algf = 1;
+		else if (c >= '0' && c <= '9')
+			numf = 1;
 		k ++;
 	}
 	op->num[k] = 0;
-	if (flag)
-		op->type = alg;
-	if (flag && k > j + 1)
+	if (algf && numf)
+		*complain = 1;
+	else if (k > 1 + j && algf)
+		op->type = fun;
+	else if (alg)
 	{
-		if (fnum)
-			*complain = 1;
-		else
-			op->mul = 1;
+	//	ft_putstr("hey\n");
+		op->type = alg;
 	}
 	*index += k;
 }
@@ -92,7 +94,6 @@ t_op	*make(t_op *n)
 	a->num = 0;
 	a->result = 0;
 	a->data = 0;
-	a->mul = 0;
 	return (a);
 }
 
@@ -109,23 +110,16 @@ void	ft_func_fudge(t_queue *q, t_op *op)
 	t_op *tmp = op->next;//update back if nil
 	t_op *f = op;
 	int i = 1;
-	f->mul = 0;
 	/*
 	ft_putstr("num: ");
 	ft_putstr(op->num);
 	write(1, "\n", 1);
 	*/
-	int k = 0;
-	if (op->num)
-	{
-		while (op->num[k])
-			k ++;
-	}
-	while (i < k)
+	while (op->num[i])
 	{
 		f->next = fudge_mul(q->nil);
 		f = f->next;
-//		probe(f->type, "hear: ");
+		probe(f->type, "hear: ");
 		f->next = make(q->nil);
 		f = f->next;
 		f->num = malloc(2 * sizeof(char));
@@ -137,20 +131,18 @@ void	ft_func_fudge(t_queue *q, t_op *op)
 			f->type = num;
 //		probe(f->type, "hear: ");
 		i ++;
-		q->size += 2;
 	}
-	if (k > 1)
-		op->num[1] = 0;
+	op->num[1] = 0;
+	if (op->num[0] > '9')
+		op->type = alg;
+	else
+		op->type = num;
 	if (tmp->type == nil)
 		q->back = f;
 	else if (i == 1)
 	{
-		q->size += 1;
-		if (f->type == num || f->type == p)
-		{
-			f->next = fudge_mul(q->nil);
-			f = f->next;
-		}
+		f->next = fudge_mul(q->nil);
+		f = f->next;
 	}
 	if (tmp->type != nil)
 		f->next = tmp;
@@ -158,8 +150,8 @@ void	ft_func_fudge(t_queue *q, t_op *op)
 
 t_wait	enq(t_queue *q, char *src, int *index)
 {
-	int i = *index;
 	int complain = 0;
+	int i = *index;
 	char c = src[i];
 	t_op *back = q->back;
 	back->next = make(q->nil);
@@ -192,6 +184,7 @@ t_wait	enq(t_queue *q, char *src, int *index)
 	if (q->front->type == nil)
 		q->front = back;
 	q->back = back;
+//	probe(q->front->type, "front: ");
 	if (back->type == num)
 	{
 		ft_atoa(back, src, index, &complain);
@@ -203,7 +196,6 @@ t_wait	enq(t_queue *q, char *src, int *index)
 	if (c == '(')
 		return (w_num);
 	return (op);
-//	probe(back->type, "back: ");
 }
 
 t_queue *create_q(void)
@@ -216,8 +208,18 @@ t_queue *create_q(void)
 	return (q);
 }
 
-void	throw(t_wait wait, char b, char *str)
+void	throw(t_wait wait, t_op *f, int size)
 {
+	char b = f->data;
+	char *str = f->num;
+	int a = (wait == op); 
+	while (a < size)
+	{
+		a++;
+		write(1, " ", 1);
+	}
+	write(1, "^\n", 2);
+	probe(size, "at index ");
 	write(1, "expecting ", 10);
 	if (wait == w_num)
 		write(1, "operand, ", 9);
@@ -272,21 +274,12 @@ void	ft_una(t_queue *q)
 	c[2] = 0;
 }
 
-void	ft_func(t_op *f)
+void	ft_func(t_queue *q, t_op *f)
 {
-	f->type = fun;
-	f->mul = 0;
-}
-
-void	ft_mul(t_queue *q)
-{
-	t_op *f = q->front;
-	while (f->type != nil)
-	{
-		if (f->mul)
-			ft_func_fudge(q, f);
-		f = f->next;
-	}
+	if (f->type == alg)
+		f->type = fun;
+	else
+		ft_func_fudge(q, f);
 }
 
 t_queue	*ft_me_dup(char *src)
@@ -315,53 +308,48 @@ t_queue	*ft_me_dup(char *src)
 		b = result->back->data;
 		if (wait == got)
 		{
-			if ((b != '(' && b != ')') && b != '!')
+			if (type == fun && b != '(')
+			{
+				throw(wait, result->back, a);
+				clear_q_hard(result);
+				return (0);
+			}
+			if ((b != '(' && b != ')') && (b != '!' && result->back->type != fun))
 				wait ^= 1;
 		}
-		else if ((wait == w_num && b == '-') && type != una)
+		else if ((wait == w_num && b == '-') && (type != una && type != fun))
 			ft_una(result);
 		else if ((wait == op && b == '(') && type <= num)
 		{
+			ft_func(result, back);
 			wait ^= 1;
-			if (type == alg)
-				ft_func(back);
-			else if (type == num)
-				ft_func_fudge(result, back);
 		}
-		else if (wait == op && back->data == ')' && (result->back->type == alg || result->back->data == '('))
+		else if (type == fun)
 		{
-			if (result->back->data == '(')
-				wait = w_num;
 			ft_func_fudge(result, back);
 		}
 		else
 		{
-			ft_putstr(src);
-			write(1, "\n", 1);
-			size = a;
-			a = (wait == op);
-			while (a < size)
-			{
-				a++;
-				write(1, " ", 1);
-			}
-			write(1, "^\n", 2);
-			probe(size, "at index ");
-			throw(wait, b, result->back->num);
+			throw(wait, result->back, a);
 			clear_q_hard(result);
 			return (0);
 		}
+//		probe(result->back->type, "result: ");
 	}
 	if (wait == w_num)
 	{
+		if (result->back->type == fun)	
+		{
+			ft_func_fudge(result, result->back);
+			return (result);
+		}
 		if (result->size)
-			ft_putstr("missing operand at end of string\n");
+			ft_putstr("missing operand at end of string\n");//throw
 		else
 			ft_putstr("empty string\n");
 		clear_q_hard(result);
 		return (0);
 	}
-	ft_mul(result);
 	return (result);
 }
 
@@ -629,7 +617,7 @@ t_queue *ft_postfix(char *v)
 		in = ft_me_dup(input);
 	if (in)
 	{
-//		ft_print(in);
+		ft_print(in);
 		out = postfix_convert(in);
 		ft_print(out);
 		clear_q_soft(in);
@@ -663,10 +651,13 @@ int		ft_alg(t_queue *in)
 	if (!in)
 		return (1);
 	t_op *f = in->front;
+	if (f == in->nil)
+		ft_putstr("reeee\n");
 	while (f->type != nil)
 	{
 		if (f->type == alg || f->type == fun)
 		{
+		//	probe(f->type, "f: ");
 			ft_putstr("algebra/functions present, do not calc\n");
 			return (1);
 		}
@@ -820,20 +811,18 @@ void	dialogue(char *v)
 	ft_putstr("exact change for division: no refunds (no floats in here)\n\n");
 	ft_putstr("no negative powers either\n\n");
 	ft_putstr("helpful debug logs:\n");
-	ft_putstr("113: fudge input\n" \
-			"206: probe enqueue\n" \
-			"310: other half of probe enqueue\n" \
+	ft_putstr("129: probe enqueue\n" \
+			"224: other half of probe enqueue\n" \
 			"293: probe stack push\n" \
-			"438: stack decision\n" \
-			"452: empty contents\n" \
-			"619: ft_postfix input/output verification\n" \
-			"722: check calculation\n" \
+			"338: stack decision\n" \
+			"352: empty contents\n" \
+			"520: ft_postfix input/output verification\n" \
+			"623: check calculation\n" \
 			"\nTHIS JUST IN--------\n\n" \
 			"mathmaticians don't use multi char variables or underscores\n" \
 			"so I can finally go debug \"sin - (1)\" and guarantee ab = a * b\n"
 			"whenever I decide to give a fuck again\n"
-			"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n" \
-			"update: done all that\n");
+			"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
 	free(table);
 }
 
