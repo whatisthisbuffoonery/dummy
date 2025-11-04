@@ -154,28 +154,14 @@ void	throw(t_wait wait, char b, char *str)
 	write(1, "\n", 1);
 }
 
-void	clear_q_soft(t_queue *q)
+void	clear_q(t_queue *q, int flag)
 {
 	t_op *f = q->front;
 	t_op *tmp;
 	while (f->type != nil)
 	{
 		tmp = f->next;
-		free(f);
-		f = tmp;
-	}
-	free(q->nil);
-	free(q);
-}
-
-void	clear_q_hard(t_queue *q)
-{
-	t_op *f = q->front;
-	t_op *tmp;
-	while (f->type != nil)
-	{
-		tmp = f->next;
-		if (f->type <= num || f->type == una || f->type == fun)
+		if (flag && (f->type <= num || f->type == una || f->type == fun))
 			free(f->num);
 		free(f);
 		f = tmp;
@@ -252,7 +238,7 @@ t_queue	*ft_me_dup(char *src)
 			write(1, "^\n", 2);
 			probe(size, "at index ");
 			throw(wait, b, result->back->num);
-			clear_q_hard(result);
+			clear_q(result, 1);
 			return (0);
 		}
 	}
@@ -262,13 +248,13 @@ t_queue	*ft_me_dup(char *src)
 			ft_putstr("missing operand at end of string\n");
 		else
 			ft_putstr("empty string\n");
-		clear_q_hard(result);
+		clear_q(result, 1);
 		return (0);
 	}
 	
 	return (result);
 }
-/*
+
 void	deq(t_queue *q)
 {
 	t_op *f = q->front;
@@ -278,8 +264,8 @@ void	deq(t_queue *q)
 	if (f == q->nil)
 		q->back = f;
 }
-*/
-void	q_copy(t_queue *out, t_op *src)
+
+void	q_copy(t_queue *out, t_op *src, t_queue *in)
 {
 	t_op *back = out->back;
 	out->size += 1;
@@ -291,16 +277,20 @@ void	q_copy(t_queue *out, t_op *src)
 	back->data = src->data;
 	back->num = src->num;
 	out->back = back;
+	if (in)
+		deq(in);
 }
 
-void	push(t_stack *stack, t_op *f)
+void	push(t_stack *stack, t_queue *in)
 {
 	stack->top += 1;
 	t_op *a = &stack->arr[stack->top];
+	t_op *f = in->front;
 	a->data = f->data;
 	a->num = f->num;
 	a->type = f->type;
 	a->result = f->result;
+	deq(in);//leaving this here was not good design
 //	probe(a->result, "push: ");
 }
 
@@ -309,7 +299,7 @@ void	r_pop(t_stack *stack, t_queue *out)
 	int i = stack->top - 1;
 	t_op *a = &stack->arr[i];
 	t_op *b = &stack->arr[i + 1];
-	q_copy(out, a);
+	q_copy(out, a, 0);
 	a->data = b->data;
 	a->type = b->type;
 	a->num = b->num;
@@ -325,7 +315,7 @@ void	b_pop(t_stack *stack, t_queue *out)
 	int k = top - i;
 	while (top > i)
 	{
-		q_copy(out, &stack->arr[top]);
+		q_copy(out, &stack->arr[top], 0);
 		top --;
 	}
 	stack->top -= (k + 1);
@@ -365,7 +355,7 @@ void	empty(t_stack *stack, t_queue *out)
 		write(1, &stack->arr[i].data, 1);
 		write(1, "\n", 1);
 		*/
-		q_copy(out, &stack->arr[i--]);
+		q_copy(out, &stack->arr[i--], 0);
 	}
 }
 
@@ -411,14 +401,15 @@ t_queue	*postfix_convert(t_queue *in)
 	while (f->type != nil)
 	{
 		if (f->type <= num)
-			q_copy(out, f);
+			q_copy(out, f, in);
 		else if (f->data == ')')
 		{
 			b_pop(stack, out);
+			deq(in);
 		}
 		else if (f->type == fun || op[(unsigned char) f->data])
 		{
-			push(stack, f);
+			push(stack, in);
 			while (check(stack))
 				r_pop(stack, out);
 		}
@@ -428,7 +419,7 @@ t_queue	*postfix_convert(t_queue *in)
 			write(1, " <- wdf\n", 8);
 			return (0);
 		}
-		f = f->next;
+		f = in->front;
 	}
 	empty(stack, out);
 	clear_s(stack);
@@ -536,7 +527,7 @@ t_queue *ft_postfix(char *v)
 	char *input = spaces(v, table);
 	t_queue *in = 0;
 	t_queue *out = 0;
-//	ft_putstr(input);
+	ft_putstr(input);
 	write(1, "\n", 1);
 	if (brackets(input))
 		write(1, "improper brackets\n", 18);
@@ -546,10 +537,10 @@ t_queue *ft_postfix(char *v)
 		in = ft_me_dup(input);
 	if (in)
 	{
-//		ft_print(in);
+		ft_print(in);
 		out = postfix_convert(in);
 		ft_print(out);
-		clear_q_soft(in);
+		clear_q(in, 0);
 	}
 	free(input);
 	free(table);
@@ -685,7 +676,7 @@ void	do_op(t_stack *s, t_op *ape, int *complain)
 	}
 	s->top -= flag;
 }
-/*
+
 void	num_free(t_queue *q)
 {
 	t_op *f = q->front;
@@ -696,7 +687,7 @@ void	num_free(t_queue *q)
 		f = f->next;
 	}
 }
-*/
+
 long	ft_calc(char *v, int *complain)
 {
 	int a = 0;
@@ -704,30 +695,31 @@ long	ft_calc(char *v, int *complain)
 	if (ft_alg(in))
 	{
 		if (in)
-			clear_q_hard(in);
+			clear_q(in, 1);
 		*complain = 1;
 		return (0);
 	}
-//	num_free(in);
+	num_free(in);
 	t_stack *s = create_s(in->size);
 	t_op *f = in->front;
 	while (f->type != nil)
 	{
 		if (f->type == num)
-			push(s, f);//leaving a deq() in push was REALLY bad design
+			push(s, in);//leaving a deq() in push was REALLY bad design
 		else
 		{
 			do_op(s, f, complain);
+			deq(in);
 		}
 		if (*complain)
 		{
 			break;
 		}
-		f = f->next;
+		f = in->front;
 	}
 	a = s->arr[s->top].result;
 	clear_s(s);
-	clear_q_hard(in);
+	clear_q(in, 0);
 	return (a);
 }
 
@@ -749,16 +741,15 @@ void	dialogue(char *v)
 		i ++;
 	}
 	ft_putstr("allowed operands: alphanumeric and _underscores\n\n");
-	ft_putstr("backslashes OK for dealing with bash\n\n");
 	ft_putstr("exact change for division: no refunds (no floats in here)\n\n");
 	ft_putstr("no negative powers either\n\n");
 	ft_putstr("helpful debug logs:\n");
 	ft_putstr("129: probe enqueue\n" \
-			"304: probe stack push\n" \
-			"350: stack decision\n" \
-			"364: empty contents\n" \
-			"533: ft_postfix input/output verification\n" \
-			"636: check calculation\n");
+			"294: probe stack push\n" \
+			"340: stack decision\n" \
+			"354: empty contents\n" \
+			"524: ft_postfix input/output verification\n" \
+			"627: check calculation\n");
 	free(table);
 }
 
