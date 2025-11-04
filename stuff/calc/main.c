@@ -815,7 +815,9 @@ void	dialogue(char *v)
 		}
 		i ++;
 	}
-	ft_putstr("allowed operands: alphanumeric and _underscores\n\n");
+	ft_putstr("functions are allowed i.e. f(x), sin(y)\n\n");
+	ft_putstr("implicit multiplication allowed to reasonable extent\n\n");
+	ft_putstr("allowed operands: numbers and single chars\n\n");
 	ft_putstr("backslashes OK for dealing with bash\n\n");
 	ft_putstr("exact change for division: no refunds (no floats in here)\n\n");
 	ft_putstr("no negative powers either\n\n");
