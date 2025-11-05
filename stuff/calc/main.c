@@ -853,11 +853,12 @@ int		main(int c, char **v)
 	if (c != 2)
 	{
 		dialogue(v[0]);
-		return (1);
+		return (0);
 	}
 	int complain = 0;
 	long a = ft_calc(v[1], &complain);
 	if (!complain)
 		ft_putnbr(a);
 	write(1, "\n", 1);
+	return (complain);
 }
