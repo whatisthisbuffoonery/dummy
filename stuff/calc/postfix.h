@@ -20,6 +20,7 @@ typedef enum
 
 typedef enum
 {
+	err = 10,
 	w_num = 1,
 	op = 0
 }				t_wait;

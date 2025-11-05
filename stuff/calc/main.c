@@ -45,15 +45,14 @@ void	ft_set(char *a, int n)
 	a[i] = 0;
 }
 
-void	ft_atoa(t_op *op, char *src, int *index, int *complain)
+int		ft_atoa(t_op *op, char *src, int *index, int *complain)
 {
 	int i = *index;
 	int k = 0;
-	int j = 0;
 	int flag = 0;
 	int fnum = 0;
 	if (src[i] == '-')
-		j ++;
+		ft_putstr("poopy\n");
 	while (src[i] && src[i] != ' ')
 		i ++;
 	k = i - *index;
@@ -66,13 +65,13 @@ void	ft_atoa(t_op *op, char *src, int *index, int *complain)
 		if (op->num[k] > '9')
 			flag = 1;
 		else
-			fnum = 1;
+			fnum = k + 1;
 		k ++;
 	}
 	op->num[k] = 0;
 	if (flag)
 		op->type = alg;
-	if (flag && k > j + 1)
+	if (flag && k > 1)
 	{
 		if (fnum)
 			*complain = 1;
@@ -80,6 +79,7 @@ void	ft_atoa(t_op *op, char *src, int *index, int *complain)
 			op->mul = 1;
 	}
 	*index += k;
+	return (fnum * flag);
 }
 
 t_op	*make(t_op *n)
@@ -194,7 +194,8 @@ t_wait	enq(t_queue *q, char *src, int *index)
 	q->back = back;
 	if (back->type == num)
 	{
-		ft_atoa(back, src, index, &complain);
+		if (ft_atoa(back, src, index, &complain) > 1)
+			return(err);
 		if (complain)
 			ft_func_fudge(q, back);
 		return (w_num);
@@ -216,8 +217,26 @@ t_queue *create_q(void)
 	return (q);
 }
 
-void	throw(t_wait wait, char b, char *str)
+void	throw(t_wait wait, t_op *f, char *src, int size, char *err_msg)
 {
+	char b = f->data;
+	char *str = f->num;
+	ft_putstr(src);
+	write(1, "\n", 1);
+	int a = (wait == op) + (wait == err);
+	while (a < size)
+	{
+		a++;
+		write(1, " ", 1);
+	}
+	write(1, "^\n", 2);
+	probe(size, "at index ");
+	if (err_msg)
+	{
+		ft_putstr(err_msg);
+		write(1, "\n", 1);
+		return;
+	}
 	write(1, "expecting ", 10);
 	if (wait == w_num)
 		write(1, "operand, ", 9);
@@ -318,6 +337,12 @@ t_queue	*ft_me_dup(char *src)
 			if ((b != '(' && b != ')') && b != '!')
 				wait ^= 1;
 		}
+		else if (got == err)
+		{
+			throw(err, result->back, src, a, "jumbled numbers and letters\n");
+			clear_q_hard(result);
+			return (0);
+		}
 		else if ((wait == w_num && b == '-') && type != una)
 			ft_una(result);
 		else if ((wait == op && b == '(') && type <= num)
@@ -336,18 +361,7 @@ t_queue	*ft_me_dup(char *src)
 		}
 		else
 		{
-			ft_putstr(src);
-			write(1, "\n", 1);
-			size = a;
-			a = (wait == op);
-			while (a < size)
-			{
-				a++;
-				write(1, " ", 1);
-			}
-			write(1, "^\n", 2);
-			probe(size, "at index ");
-			throw(wait, b, result->back->num);
+			throw(wait, result->back, src, a, 0);
 			clear_q_hard(result);
 			return (0);
 		}
@@ -355,7 +369,7 @@ t_queue	*ft_me_dup(char *src)
 	if (wait == w_num)
 	{
 		if (result->size)
-			ft_putstr("missing operand at end of string\n");
+			throw(wait, result->back, src, a, "missing operand at end of string\n");
 		else
 			ft_putstr("empty string\n");
 		clear_q_hard(result);
@@ -816,26 +830,21 @@ void	dialogue(char *v)
 		i ++;
 	}
 	ft_putstr("functions are allowed i.e. f(x), sin(y)\n\n");
-	ft_putstr("implicit multiplication allowed to reasonable extent\n\n");
+	ft_putstr("implicit multiplication allowed to reasonable extent: 2n, (2)n, 2(n), but not n2, (n)2, n(2) is a func\n\n");
 	ft_putstr("allowed operands: numbers and single chars\n\n");
 	ft_putstr("backslashes OK for dealing with bash\n\n");
 	ft_putstr("exact change for division: no refunds (no floats in here)\n\n");
 	ft_putstr("no negative powers either\n\n");
 	ft_putstr("helpful debug logs:\n");
 	ft_putstr("113: fudge input\n" \
-			"206: probe enqueue\n" \
-			"310: other half of probe enqueue\n" \
-			"293: probe stack push\n" \
-			"438: stack decision\n" \
-			"452: empty contents\n" \
-			"619: ft_postfix input/output verification\n" \
-			"722: check calculation\n" \
-			"\nTHIS JUST IN--------\n\n" \
-			"mathmaticians don't use multi char variables or underscores\n" \
-			"so I can finally go debug \"sin - (1)\" and guarantee ab = a * b\n"
-			"whenever I decide to give a fuck again\n"
-			"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n" \
-			"update: done all that\n");
+			"207: probe enqueue\n" \
+			"329: other half of probe enqueue\n" \
+			"404: probe stack push\n" \
+			"449: stack decision\n" \
+			"464: empty contents\n" \
+			"630: ft_postfix input/output verification\n" \
+			"733: check calculation\n" \
+			"\n");
 	free(table);
 }
 
