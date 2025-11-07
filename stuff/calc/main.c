@@ -22,16 +22,6 @@ void	ft_print(t_queue *q)
 	write(1, "\n", 1);
 }
 
-void	probe(int n, char *a)
-{
-	int i = 0;
-	while (a[i])
-		i ++;
-	write(1, a, i);
-	ft_putnbr(n);
-	write(1, "\n", 1);
-}
-
 void	ft_putnbr(long n)
 {
 	long t = 1;
@@ -49,6 +39,16 @@ void	ft_putnbr(long n)
 		write(1, &a, 1);
 		t /= 10;
 	}
+}
+
+void	probe(int n, char *a)
+{
+	int i = 0;
+	while (a[i])
+		i ++;
+	write(1, a, i);
+	ft_putnbr(n);
+	write(1, "\n", 1);
 }
 
 void	throw(t_wait wait, t_op *f, char *src, int size, char *err_msg)
@@ -128,16 +128,6 @@ void	clear_q_hard(t_queue *q)
 	free(q);
 }
 
-t_queue *create_q(void)
-{
-	t_queue *q = malloc(sizeof(t_queue));
-	q->nil = make(0);
-	q->back = q->nil;
-	q->front = q->nil;
-	q->size = 0;
-	return (q);
-}
-
 t_op	*make(t_op *n)
 {
 	t_op *a = malloc(sizeof(t_op));
@@ -152,14 +142,42 @@ t_op	*make(t_op *n)
 	return (a);
 }
 
+t_queue *create_q(void)
+{
+	t_queue *q = malloc(sizeof(t_queue));
+	q->nil = make(0);
+	q->back = q->nil;
+	q->front = q->nil;
+	q->size = 0;
+	return (q);
+}
+
+char	*tabler(void)
+{
+	char *c = malloc(128 * sizeof(char));
+	int i = 0;
+	while (i < 128)
+		c[i++] = 0;
+	c['+'] = 1;
+	c['-'] = 1;
+	c['/'] = 1;
+	c['*'] = 1;
+	c['%'] = 1;
+	c['!'] = 1;
+	c['^'] = 1;
+	c['('] = 1;
+	c[')'] = 1;
+	return (c);
+}
+
+//-----------------------------utils
+
 int		ft_atoa(t_op *op, char *src, int *index, int *complain)
 {
 	int i = *index;
 	int k = 0;
 	int flag = 0;
 	int fnum = 0;
-	if (src[i] == '-')
-		ft_putstr("poopy\n");
 	while (src[i] && src[i] != ' ')
 		i ++;
 	k = i - *index;
@@ -198,6 +216,7 @@ t_op	*fudge_mul(t_op *nil)
 	a->type = md;
 	return (a);
 }
+
 //wtf you mean the user put two funcs together without brackets
 void	ft_func_fudge(t_queue *q, t_op *op)
 {
@@ -403,7 +422,7 @@ t_queue	*ft_me_dup(char *src)
 	return (result);
 }
 
-//-----------------------------me_dup
+//-----------------------------ft_me_dup
 
 void	q_copy(t_queue *out, t_op *src)
 {
@@ -493,24 +512,6 @@ void	empty(t_stack *stack, t_queue *out)
 		*/
 		q_copy(out, &stack->arr[i--]);
 	}
-}
-
-char	*tabler(void)
-{
-	char *c = malloc(128 * sizeof(char));
-	int i = 0;
-	while (i < 128)
-		c[i++] = 0;
-	c['+'] = 1;
-	c['-'] = 1;
-	c['/'] = 1;
-	c['*'] = 1;
-	c['%'] = 1;
-	c['!'] = 1;
-	c['^'] = 1;
-	c['('] = 1;
-	c[')'] = 1;
-	return (c);
 }
 
 t_queue	*postfix_convert(t_queue *in)
@@ -842,14 +843,14 @@ void	dialogue(char *v)
 	ft_putstr("exact change for division: no refunds (no floats in here)\n\n");
 	ft_putstr("no negative powers either\n\n");
 	ft_putstr("helpful debug logs:\n");
-	ft_putstr("113: fudge input\n" \
-			"207: probe enqueue\n" \
-			"329: other half of probe enqueue\n" \
-			"404: probe stack push\n" \
-			"449: stack decision\n" \
-			"464: empty contents\n" \
-			"630: ft_postfix input/output verification\n" \
-			"733: check calculation\n" \
+	ft_putstr("227: fudge input\n" \
+			"351: probe enqueue\n" \
+			"372: other half of probe enqueue\n" \
+			"449: probe stack push\n" \
+			"494: stack decision\n" \
+			"508: empty contents\n" \
+			"631: ft_postfix input/output verification\n" \
+			"738: check calculation\n" \
 			"\n");
 	free(table);
 }
