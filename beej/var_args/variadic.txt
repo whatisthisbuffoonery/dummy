@@ -1,0 +1,1 @@
+always always avoid putting new variables between va_start and va_end for portability

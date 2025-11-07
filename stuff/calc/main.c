@@ -634,7 +634,7 @@ t_queue *ft_postfix(char *v)
 	t_queue *in = 0;
 	t_queue *out = 0;
 //	ft_putstr(input);
-	write(1, "\n", 1);
+//	write(1, "\n", 1);
 	if (brackets(input))
 		write(1, "improper brackets\n", 18);
 	else if (spelling(input, table))
