@@ -8,6 +8,30 @@ void	ft_putstr(char *a)
 	write(1, a, i);
 }
 
+void	ft_print(t_queue *q)
+{
+	t_op *a = q->front;
+	while (a->type != nil)
+	{
+		if (a->num)
+			ft_putstr(a->num);//propose clearing una here
+		else
+			write(1, &a->data, 1);
+		a = a->next;
+	}
+	write(1, "\n", 1);
+}
+
+void	probe(int n, char *a)
+{
+	int i = 0;
+	while (a[i])
+		i ++;
+	write(1, a, i);
+	ft_putnbr(n);
+	write(1, "\n", 1);
+}
+
 void	ft_putnbr(long n)
 {
 	long t = 1;
@@ -27,22 +51,105 @@ void	ft_putnbr(long n)
 	}
 }
 
-void	probe(int n, char *a)
+void	throw(t_wait wait, t_op *f, char *src, int size, char *err_msg)
 {
-	int i = 0;
-	while (a[i])
-		i ++;
-	write(1, a, i);
-	ft_putnbr(n);
+	char b = f->data;
+	char *str = f->num;
+	ft_putstr(src);
+	write(1, "\n", 1);
+	int a = (wait == op) + (wait == err);
+	while (a < size)
+	{
+		a++;
+		write(1, " ", 1);
+	}
+	write(1, "^\n", 2);
+	probe(size, "at index ");
+	if (err_msg)
+	{
+		ft_putstr(err_msg);
+		write(1, "\n", 1);
+		return;
+	}
+	write(1, "expecting ", 10);
+	if (wait == w_num)
+		write(1, "operand, ", 9);
+	else
+		write(1, "operator, ", 10);
+	write(1, "got: ", 5);
+	if (!str)
+		write(1, &b, 1);
+	else
+		ft_putstr(str);
 	write(1, "\n", 1);
 }
 
-void	ft_set(char *a, int n)
+void	clear_s(t_stack *s)
 {
-	int i = 0;
-	while (i < n)
-		a[i++] = 0;
-	a[i] = 0;
+	free(s->arr);
+	free(s);
+}
+
+t_stack	*create_s(int size)
+{
+	t_stack *s = malloc(sizeof(t_stack));
+	s->top = -1;
+	s->arr = malloc(size * sizeof(t_op));
+	return (s);
+}
+
+void	clear_q_soft(t_queue *q)
+{
+	t_op *f = q->front;
+	t_op *tmp;
+	while (f->type != nil)
+	{
+		tmp = f->next;
+		free(f);
+		f = tmp;
+	}
+	free(q->nil);
+	free(q);
+}
+
+void	clear_q_hard(t_queue *q)
+{
+	t_op *f = q->front;
+	t_op *tmp;
+	while (f->type != nil)
+	{
+		tmp = f->next;
+		if (f->type <= num || f->type == una || f->type == fun)
+			free(f->num);
+		free(f);
+		f = tmp;
+	}
+	free(q->nil);
+	free(q);
+}
+
+t_queue *create_q(void)
+{
+	t_queue *q = malloc(sizeof(t_queue));
+	q->nil = make(0);
+	q->back = q->nil;
+	q->front = q->nil;
+	q->size = 0;
+	return (q);
+}
+
+t_op	*make(t_op *n)
+{
+	t_op *a = malloc(sizeof(t_op));
+	if (!n)
+		n = a;
+	a->next = n;
+	a->type = nil;
+	a->num = 0;
+	a->result = 0;
+	a->data = 0;
+	a->mul = 0;
+	return (a);
 }
 
 int		ft_atoa(t_op *op, char *src, int *index, int *complain)
@@ -82,19 +189,7 @@ int		ft_atoa(t_op *op, char *src, int *index, int *complain)
 	return (fnum * flag);
 }
 
-t_op	*make(t_op *n)
-{
-	t_op *a = malloc(sizeof(t_op));
-	if (!n)
-		n = a;
-	a->next = n;
-	a->type = nil;
-	a->num = 0;
-	a->result = 0;
-	a->data = 0;
-	a->mul = 0;
-	return (a);
-}
+//-----------------------------ft_atoa
 
 t_op	*fudge_mul(t_op *nil)
 {
@@ -156,6 +251,36 @@ void	ft_func_fudge(t_queue *q, t_op *op)
 		f->next = tmp;
 }
 
+void	ft_func(t_op *f)
+{
+	f->type = fun;
+	f->mul = 0;
+}
+
+void	ft_mul(t_queue *q)
+{
+	t_op *f = q->front;
+	while (f->type != nil)
+	{
+		if (f->mul)
+			ft_func_fudge(q, f);
+		f = f->next;
+	}
+}
+
+//-----------------------------ft_func
+
+void	ft_una(t_queue *q)
+{
+	t_op *back = q->back;
+	back->type = una;
+	back->num = malloc(3 * sizeof(char));
+	char *c = back->num;
+	c[0] = '_';
+	c[1] = 'u';
+	c[2] = 0;
+}
+
 t_wait	enq(t_queue *q, char *src, int *index)
 {
 	int i = *index;
@@ -205,107 +330,6 @@ t_wait	enq(t_queue *q, char *src, int *index)
 		return (w_num);
 	return (op);
 //	probe(back->type, "back: ");
-}
-
-t_queue *create_q(void)
-{
-	t_queue *q = malloc(sizeof(t_queue));
-	q->nil = make(0);
-	q->back = q->nil;
-	q->front = q->nil;
-	q->size = 0;
-	return (q);
-}
-
-void	throw(t_wait wait, t_op *f, char *src, int size, char *err_msg)
-{
-	char b = f->data;
-	char *str = f->num;
-	ft_putstr(src);
-	write(1, "\n", 1);
-	int a = (wait == op) + (wait == err);
-	while (a < size)
-	{
-		a++;
-		write(1, " ", 1);
-	}
-	write(1, "^\n", 2);
-	probe(size, "at index ");
-	if (err_msg)
-	{
-		ft_putstr(err_msg);
-		write(1, "\n", 1);
-		return;
-	}
-	write(1, "expecting ", 10);
-	if (wait == w_num)
-		write(1, "operand, ", 9);
-	else
-		write(1, "operator, ", 10);
-	write(1, "got: ", 5);
-	if (!str)
-		write(1, &b, 1);
-	else
-		ft_putstr(str);
-	write(1, "\n", 1);
-}
-
-void	clear_q_soft(t_queue *q)
-{
-	t_op *f = q->front;
-	t_op *tmp;
-	while (f->type != nil)
-	{
-		tmp = f->next;
-		free(f);
-		f = tmp;
-	}
-	free(q->nil);
-	free(q);
-}
-
-void	clear_q_hard(t_queue *q)
-{
-	t_op *f = q->front;
-	t_op *tmp;
-	while (f->type != nil)
-	{
-		tmp = f->next;
-		if (f->type <= num || f->type == una || f->type == fun)
-			free(f->num);
-		free(f);
-		f = tmp;
-	}
-	free(q->nil);
-	free(q);
-}
-
-void	ft_una(t_queue *q)
-{
-	t_op *back = q->back;
-	back->type = una;
-	back->num = malloc(3 * sizeof(char));
-	char *c = back->num;
-	c[0] = '_';
-	c[1] = 'u';
-	c[2] = 0;
-}
-
-void	ft_func(t_op *f)
-{
-	f->type = fun;
-	f->mul = 0;
-}
-
-void	ft_mul(t_queue *q)
-{
-	t_op *f = q->front;
-	while (f->type != nil)
-	{
-		if (f->mul)
-			ft_func_fudge(q, f);
-		f = f->next;
-	}
 }
 
 t_queue	*ft_me_dup(char *src)
@@ -378,6 +402,8 @@ t_queue	*ft_me_dup(char *src)
 	ft_mul(result);
 	return (result);
 }
+
+//-----------------------------me_dup
 
 void	q_copy(t_queue *out, t_op *src)
 {
@@ -469,14 +495,6 @@ void	empty(t_stack *stack, t_queue *out)
 	}
 }
 
-t_stack	*create_s(int size)
-{
-	t_stack *s = malloc(sizeof(t_stack));
-	s->top = -1;
-	s->arr = malloc(size * sizeof(t_op));
-	return (s);
-}
-
 char	*tabler(void)
 {
 	char *c = malloc(128 * sizeof(char));
@@ -493,12 +511,6 @@ char	*tabler(void)
 	c['('] = 1;
 	c[')'] = 1;
 	return (c);
-}
-
-void	clear_s(t_stack *s)
-{
-	free(s->arr);
-	free(s);
 }
 
 t_queue	*postfix_convert(t_queue *in)
@@ -534,19 +546,7 @@ t_queue	*postfix_convert(t_queue *in)
 	return (out);
 }
 
-void	ft_print(t_queue *q)
-{
-	t_op *a = q->front;
-	while (a->type != nil)
-	{
-		if (a->num)
-			ft_putstr(a->num);//propose clearing una here
-		else
-			write(1, &a->data, 1);
-		a = a->next;
-	}
-	write(1, "\n", 1);
-}
+//-----------------------------postfix_convert
 
 char	*spaces(char *v, char *t)
 {
@@ -653,6 +653,8 @@ t_queue *ft_postfix(char *v)
 	return (out);
 }
 
+//-----------------------------ft_postfix
+
 int		ft_atoi(char *c)
 {
 	int i = 0;
@@ -690,6 +692,8 @@ int		ft_alg(t_queue *in)
 	}
 	return (0);
 }
+
+//-----------------------------ft_alg
 
 int		ft_iterative_power(int nb, int power)
 {
@@ -782,6 +786,8 @@ void	do_op(t_stack *s, t_op *ape, int *complain)
 	}
 	s->top -= flag;
 }
+
+//-----------------------------do-op
 
 long	ft_calc(char *v, int *complain)
 {
