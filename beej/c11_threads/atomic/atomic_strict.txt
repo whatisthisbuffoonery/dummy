@@ -1,0 +1,26 @@
+memory_order_seq_cst	Sequential Consistency
+//default, applies to all operations not in function calls
+//will sync each other and everything in between
+//holy lag
+
+//opt in:
+memory_order_acq_rel	Acquire/Release
+memory_order_release	Release (write)
+memory_order_acquire	Acquire (read)
+
+//syncs writes and reads only for the atomic var involved.
+//will sync non atomics, relaxed ops, and accesses on the same atomic var
+
+//but not other memory_order operations
+
+//release keeps stuff that came before it, before it
+//acquire keeps stuff after
+
+
+
+memory_order_consume	Consume
+//non existant in this era
+
+
+memory_order_relaxed	Relaxed
+//writes stuff without lagging the program to next week

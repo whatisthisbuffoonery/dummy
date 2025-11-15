@@ -1,0 +1,20 @@
+meant to replace mtx_lock() and cnd_wait() on the child's end
+
+struct timespec timeout
+
+...
+
+mtx_init(&mtx, mtx_timed);
+cnd_init(&cnd);
+
+...
+
+int result;
+timespec_get(&timeout, TIME_UTC);
+
+
+result = mtx_timedlock(&mtx, &timeout);
+result = cnd_timedwait(&cnd, &mtx, &timeout);
+
+if (result == thrd_timeout)
+	//bomb out

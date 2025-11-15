@@ -1,0 +1,7 @@
+Type						Description
+
+mtx_plain					Regular ol’ mutex
+mtx_timed					Mutex that supports timeouts
+mtx_plain|mtx_recursive		Recursive mutex
+mtx_timed|mtx_recursive		Recursive mutex that supports timeouts
+^| bitwise or

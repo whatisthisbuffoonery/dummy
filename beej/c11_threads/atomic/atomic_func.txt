@@ -1,0 +1,7 @@
+atomic_store_explicit						memory_order_release, relaxed, seq_cst
+atomic_load_explicit						memory_order_acquire, relaxed, seq_cst
+atomic_exchange_explicit					memory_order_acq_rel, relaxed, seq_cst
+atomic_compare_exchange_* (weak/strong)		memory_order_acq_rel, acquire, release, relaxed, seq_cst
+atomic_fetch_add/sub/etc.					memory_order_acq_rel, relaxed, seq_cst
+atomic_flag_test_and_set_explicit			memory_order_acquire, rel, seq_cst
+atomic_flag_clear_explicit					memory_order_release, seq_cst

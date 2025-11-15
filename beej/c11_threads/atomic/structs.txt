@@ -1,0 +1,2 @@
+no accessing fields on an atomic struct
+make a local copy to read from or write to atomic structs
