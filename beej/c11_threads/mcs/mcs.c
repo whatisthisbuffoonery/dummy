@@ -54,7 +54,7 @@ void	resize(t_queue *q, int size)
 	}
 	atomic_store_explicit(&new[i].next, 0, memory_order_relaxed);
 	atomic_store_explicit(&l_new->next, 0, memory_order_relaxed);
-	size ++;
+//	size ++;
 //	probe(size + size + !size, "new size: ");
 }
 
@@ -158,9 +158,9 @@ int		main(void)
 	nil2->next = 0;
 	t_queue dis = {.list = nil2, .arr = nil, .l_curr = nil2, .size = 0, .back = nil, .front = nil, .curr_front = 0, .curr_back = 0};
 	//last = &head;
-	atomic_store_explicit(&last, head, memory_order_seq_cst);
+	atomic_store_explicit(&last, head, memory_order_relaxed);
 	//queue = &dis;
-	atomic_store_explicit(&queue, &dis, memory_order_seq_cst);
+	atomic_store_explicit(&queue, &dis, memory_order_relaxed);
 	while (i < max)
 	{
 		src[i] = i;
@@ -174,4 +174,9 @@ int		main(void)
 	ft_print(&dis);
 	clear_q(&dis);
 	clear_wait(head);
+	/*
+	probe(sizeof(_Atomic (struct s_wait *)), "wait size: ");
+	probe(sizeof(_Atomic (struct s_node *)), "node size: ");
+	probe(sizeof(_Atomic (struct s_list *)), "list size: ");
+	*/
 }
