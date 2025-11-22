@@ -1,0 +1,44 @@
+# Lines configured by zsh-newuser-install
+HISTFILE=~/.histfile
+HISTSIZE=1000
+SAVEHIST=1000
+bindkey -e
+# End of lines configured by zsh-newuser-install
+
+export PATH=$PATH:/snap/bin
+
+# original code don't work:
+#if ! systemctl status docker | grep "running" &> /dev/null; then
+#		echo "[Francinette] Starting Docker..."
+#		sleep 1
+#		exec "/usr/bin/zsh"
+#fi
+if ! command -v docker &> /dev/null; then
+    echo "[Francinette] Docker command not found. Please install Docker or Add /snap/bin to PATH."
+elif ! docker info &> /dev/null; then
+    echo "[Francinette] Docker daemon not running or inaccessible. Please start Docker Desktop."
+fi
+
+if ! docker image ls | grep "francinette-image" &> /dev/null; then
+	if docker image ls 2>&1 | grep permission &> /dev/null; then
+		echo "[Francinette] Permission Error"
+	else
+		if ! [ -f /home/darren/francinette-image/francinette.tar ] || docker load < /home/darren/francinette-image/francinette.tar 2>&1 | grep "no such file"  &> /dev/null; then
+			echo "[Francinette] Error width file "francinette.tar""
+			docker build -t francinette-image /home/darren/francinette-image
+			docker image save francinette-image > /home/darren/francinette-image/francinette.tar
+		else
+			echo "[Francinette] Loading the docker container"
+			docker load < /home/darren/francinette-image/francinette.tar
+		fi
+		exec "/usr/bin/zsh"
+	fi
+fi
+if ! docker ps | grep "francinette-image" &> /dev/null; then
+	if docker run -d -i -v /home:/home -v /goinfre:/goinfre -v /sgoinfre:/sgoinfre -v /home/darren/francinette-image/logs:/francinette/logs -v /home/darren/francinette-image/temp:/francinette/temp --name run-paco francinette-image /bin/bash 2>&1 | grep "already" &> /dev/null; then
+		docker start run-paco
+	fi
+fi
+alias francinette=/home/darren/francinette-image/run.sh
+
+alias paco=/home/darren/francinette-image/run.sh
