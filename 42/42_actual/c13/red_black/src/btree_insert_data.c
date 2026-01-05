@@ -54,7 +54,7 @@ int		ft_check(node **root, node **a, int verbose)
 void	btree_insert_data(tree *dis, void *data, int (*cmpf)(void *, void *), int back[], int verbose)
 {
 	int compare = 0;
-	node *a = btree_create_node(data, dis->nil);
+	node *a;
 	node *curr = *dis->root;
 	node *next = dis->nil;
 	while (curr != dis->nil)
@@ -75,6 +75,7 @@ void	btree_insert_data(tree *dis, void *data, int (*cmpf)(void *, void *), int b
 		else
 			break;
 	}
+	a = btree_create_node(data, dis->nil);
 	if (*dis->root == dis->nil)
 	{
 		a->C = black;
